@@ -7,3 +7,6 @@ env/
 
 # Poetry's storage
 poetry.lock
+
+# Pyacharm's storage
+.idea/
