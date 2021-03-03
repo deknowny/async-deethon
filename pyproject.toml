@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "async-deethon"
+version = "0.1.0"
+description = "Async implementation of deethon library"
+authors = ["Rhinik <deknowny@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiohttp = "^3.7.4"
+pycryptodome = "^3.10.1"
+mutagen = "^1.45.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+black = "^20.8b1"
+deethon = "^0.5.0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

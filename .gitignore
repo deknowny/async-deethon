@@ -1,0 +1,9 @@
+# MacOS's storage
+.DS_Store
+
+# Python's storage
+__pycache__/
+env/
+
+# Poetry's storage
+poetry.lock
