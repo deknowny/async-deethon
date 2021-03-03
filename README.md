@@ -25,6 +25,9 @@ async def main():
     # Optional save the music
     with open("file.mp3", "wb") as file:
         file.write(result)
+        
+    await downloader.close()
+
 
 
 asyncio.run(main())
@@ -42,6 +45,34 @@ async def main():
     downloader = deethon.Session("arl token from cookies")
     result = await downloader.search_songs("Cyberpunk")
     print(result)
+    
+    await downloader.close()
+
+
+
+asyncio.run(main())
+```
+***
+Download status bar
+```python
+
+import asyncio
+
+import async_deethon as deethon
+
+
+async def main():
+    async def progress_drawer(current, total):
+        print(f"\r{current / total:%}", end="")
+
+    downloader = deethon.Session("key")
+    result = await downloader.download_track_via_id(
+        1043317462, bitrate="MP3",
+        progress_callback=progress_drawer,
+        
+    )
+
+    await downloader.close()
 
 
 asyncio.run(main())

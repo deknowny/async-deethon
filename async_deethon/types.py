@@ -9,13 +9,10 @@ import aiohttp
 
 from . import consts, errors
 
-if TYPE_CHECKING:
-    from .session import Session
 
-
-async def _get_request(
+async def _bytes_get_request(
     session: ty.Optional[aiohttp.ClientSession] = None, *args, **kwargs
-) -> aiohttp.ClientResponse:
+) -> bytes:
     close_session = session is None
     if close_session:
         session = aiohttp.ClientSession(
@@ -24,23 +21,27 @@ async def _get_request(
             raise_for_status=True,
         )
     async with session.get(*args, **kwargs) as response:
+        response = await response.read()
         if close_session:
             await session.close()
         return response
 
 
-async def _bytes_get_request(
-    session: ty.Optional[aiohttp.ClientSession] = None, *args, **kwargs
-) -> bytes:
-    response = await _get_request(session, *args, **kwargs)
-    return await response.read()
-
-
 async def _json_get_request(
     session: ty.Optional[aiohttp.ClientSession] = None, *args, **kwargs
 ) -> dict:
-    response = await _get_request(session, *args, **kwargs)
-    return await response.json()
+    close_session = session is None
+    if close_session:
+        session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=False),
+            skip_auto_headers={"User-Agent"},
+            raise_for_status=True,
+        )
+    async with session.get(*args, **kwargs) as response:
+        response = await response.json()
+        if close_session:
+            await session.close()
+        return response
 
 
 class Album:
@@ -304,20 +305,10 @@ class Track:
     async def init_via_track_id(
         cls, track_id: int, session: ty.Optional[aiohttp.ClientSession] = None
     ) -> Track:
-        close_session = session is None
-        if close_session:
-            session = aiohttp.ClientSession(
-                connector=aiohttp.TCPConnector(ssl=False),
-                skip_auto_headers={"User-Agent"},
-                raise_for_status=True,
-            )
-        async with session.get(f"https://api.deezer.com/track/{track_id}") as response:
-            response = await response.json()
-
-        if close_session:
-            await session.close()
-
-        return cls(response)
+        info = await _json_get_request(
+            session, f"https://api.deezer.com/track/{track_id}"
+        )
+        return cls(info)
 
     async def fetch_album(self) -> Album:
         """Return an Album instance."""

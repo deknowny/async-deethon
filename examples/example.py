@@ -17,6 +17,8 @@ async def download():
     with open("file.mp3", "wb") as file:
         file.write(result)
 
+    await downloader.close()
+
 
 async def search():
     downloader = deethon.Session(
@@ -30,7 +32,30 @@ async def search():
     result = await downloader.search_songs("Cyberpunk")
     print(result)
 
+    await downloader.close()
 
-asyncio.run(search())
+
+async def status_bar():
+    async def progress_drawer(current, total):
+        print(f"\r{current / total:%}", end="")
+
+    downloader = deethon.Session(
+        "205e3b518df04fe4fccfd1cc47df811ccb5"
+        "d5dc533c717e9aabab6cac25ff8f90f60207"
+        "8edc0586c7232897a30d6e65b0c83114d5be"
+        "18148a4ae49b07ef75d904c50163a594ccac"
+        "a3849ebe7bb0b4f5b783726bcf5a602e49575"
+        "45ded0d3a0b4"
+    )
+    result = await downloader.download_track_via_id(
+        1043317462, bitrate="MP3",
+        progress_callback=progress_drawer,
+        callback_calls_delay=0.1
+    )
+
+    await downloader.close()
+
+
+asyncio.run(status_bar())
 
 

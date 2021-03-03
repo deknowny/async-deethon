@@ -153,7 +153,8 @@ class Session:
         self,
         track: types.Track,
         bitrate: str = "FLAC",
-        progress_callback: Optional[Callable] = None,
+        progress_callback: Optional[Callable[[int, int], None]] = None,
+        callback_calls_delay: float = 0.1
     ) -> bytes:
         """
         Downloads the given [Track][async_deethon.types.Track] object.
@@ -164,6 +165,8 @@ class Session:
                 (`FLAC`, `MP3_320`, `MP3_256`, `MP3_128`).
             progress_callback: A callable that accepts
                 `current` and `bytes` arguments.
+
+            callback_calls_delay: Delay between calback calls
 
         Returns:
             The file path of the downloaded track.
@@ -193,11 +196,15 @@ class Session:
 
             current = 0
             buffer = b""
+            last_callback_call = time.monotonic()
             async for data, _ in response.content.iter_chunks():
                 current += len(data)
                 buffer += data
                 if progress_callback:
-                    asyncio.create_task(progress_callback(current, total))
+                    now = time.monotonic()
+                    if now - last_callback_call > callback_calls_delay:
+                        asyncio.create_task(progress_callback(current, total))
+                        last_callback_call = now
 
             return buffer
 
@@ -206,9 +213,10 @@ class Session:
         track_id: int,
         bitrate: str = "FLAC",
         progress_callback: Optional[Callable] = None,
+        callback_calls_delay: float = 0.1
     ) -> bytes:
         track = await types.Track.init_via_track_id(track_id)
-        return await self.download_track(track, bitrate, progress_callback)
+        return await self.download_track(track, bitrate, progress_callback, callback_calls_delay)
 
     async def download_album(
         self, album: types.Album, bitrate: str = None, stream: bool = False
@@ -232,3 +240,7 @@ class Session:
         ]
         tracks = await asyncio.gather(*download_coros)
         return tracks
+
+    async def close(self):
+        if self._session is not None and not self._session.closed:
+            await self._session.close()
