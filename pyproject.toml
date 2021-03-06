@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "async-deethon"
-version = "0.2.0"
+version = "0.2.1"
 description = "Async implementation of deethon library"
 authors = ["Rhinik <deknowny@gmail.com>"]
 

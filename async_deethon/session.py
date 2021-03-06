@@ -37,6 +37,7 @@ class Session:
                 connector=aiohttp.TCPConnector(ssl=False),
                 skip_auto_headers={"User-Agent"},
                 raise_for_status=True,
+                cookies=self._cookies
             )
 
     async def _refresh_session(self) -> None:
@@ -44,7 +45,7 @@ class Session:
         if user["USER"]["USER_ID"] == 0:
             raise errors.DeezerLoginError
         self._csrf_token = user["checkForm"]
-        self._session_expires = time.time() + 3600
+        self._session_expires = time.time() + 3200
 
     async def _find_albums(self, name: str):
         async with self._session.get(
@@ -106,7 +107,7 @@ class Session:
         }
         await self.update_requests_session()
         async with self._session.post(
-            consts.API_URL, params=params, json=json, cookies=self._cookies
+            consts.API_URL, params=params, json=json
         ) as response:
             response = await response.json()
             return response["results"]
