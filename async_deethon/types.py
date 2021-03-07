@@ -324,7 +324,10 @@ class Track:
 
         """
         r = await session.get_api(consts.METHOD_PAGE_TRACK, {"sng_id": self.id})
-        self.md5_origin = r["DATA"]["MD5_ORIGIN"]
+        try:
+            self.md5_origin = r["DATA"]["MD5_ORIGIN"]
+        except:
+            breakpoint()
         self.media_version = r["DATA"]["MEDIA_VERSION"]
 
         if isinstance(r["DATA"]["SNG_CONTRIBUTORS"], list):
